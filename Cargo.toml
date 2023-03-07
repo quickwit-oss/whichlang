@@ -1,0 +1,14 @@
+[package]
+name = "whichlang"
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+criterion = "0.4"
+
+[[bench]]
+name = "bench"
+harness = false
+
+[[bin]]
+name = "create_train_dataset"
