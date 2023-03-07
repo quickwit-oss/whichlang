@@ -5,7 +5,7 @@ mod weights;
 const NUM_LANGUAGES: usize = LANGUAGES.len();
 
 #[doc(hidden)]
-pub const DIMENSION: usize = 1 << 11;
+pub const DIMENSION: usize = 1 << 12;
 const BIGRAM_MASK: u32 = (1 << 16) - 1;
 const TRIGRAM_MASK: u32 = (1 << 24) - 1;
 
@@ -45,11 +45,13 @@ impl Feature {
 }
 
 pub fn detect_language(text: &str) -> Lang {
-    let mut scores: [f32; NUM_LANGUAGES] = weights::INTERCEPTS.clone();
+    let mut scores: [f32; NUM_LANGUAGES] = Default::default();
+    let mut num_features = 0.0f32;
     emit_tokens(
         text,
         #[inline(always)]
         |token| {
+            num_features += 1.0f32;
             let bucket = token.to_hash() % DIMENSION as u32;
             let idx = bucket as usize * NUM_LANGUAGES;
             let per_language_scores = &weights::WEIGHTS[idx..idx + NUM_LANGUAGES];
@@ -58,6 +60,10 @@ pub fn detect_language(text: &str) -> Lang {
             }
         },
     );
+    for i in 0..NUM_LANGUAGES {
+        // Ok so the sqrt(num_features) is not really the norm, but whatever.
+        scores[i] = scores[i] / num_features.sqrt() + weights::INTERCEPTS[i];
+    }
     let lang_id = scores
         .iter()
         .enumerate()
@@ -69,10 +75,10 @@ pub fn detect_language(text: &str) -> Lang {
 
 #[doc(hidden)]
 pub fn emit_tokens(text: &str, mut listener: impl FnMut(Feature)) {
-    let mut prev = 0u32;
-    let mut num_previous_ascii_chr = 0;
-    for (_pos, chr) in text.char_indices() {
-        let code = chr as u32;
+    let mut prev = ' ' as u32;
+    let mut num_previous_ascii_chr = 1;
+    for chr in text.chars() {
+        let code = chr.to_ascii_lowercase() as u32;
         if !chr.is_ascii() {
             listener(Feature::Unicode(chr));
             listener(Feature::UnicodeClass(chr));
@@ -91,14 +97,19 @@ pub fn emit_tokens(text: &str, mut listener: impl FnMut(Feature)) {
             2 => {
                 listener(Feature::AsciiNGram(prev & BIGRAM_MASK));
                 listener(Feature::AsciiNGram(prev & TRIGRAM_MASK));
+                num_previous_ascii_chr = 3;
             }
             3 => {
                 listener(Feature::AsciiNGram(prev & BIGRAM_MASK));
                 listener(Feature::AsciiNGram(prev & TRIGRAM_MASK));
+                listener(Feature::AsciiNGram(prev));
             }
             _ => {
                 unreachable!();
             }
+        }
+        if !chr.is_alphanumeric() {
+            prev = ' ' as u32;
         }
     }
 }
@@ -182,23 +193,10 @@ mod tests {
 
     fn ascii_ngram_feature(text: &str) -> Feature {
         assert!(text.is_ascii());
-        let bytes = text.as_bytes();
-        match text.len() {
-            2 => {
-                let b0 = bytes[0] as u32;
-                let b1 = bytes[1] as u32;
-                Feature::AsciiNGram(b0 << 8 | b1)
-            }
-            3 => {
-                let b0 = bytes[0] as u32;
-                let b1 = bytes[1] as u32;
-                let b2 = bytes[2] as u32;
-                Feature::AsciiNGram(b0 << 16 | b1 << 8 | b2)
-            }
-            _ => {
-                panic!("only supports, 1, 2, or 3 character strings");
-            }
-        }
+        let mut bytes: [u8; 4] = [0u8; 4];
+        assert!(text.len() <= 4);
+        bytes[4-text.len()..].copy_from_slice(text.as_bytes());
+        Feature::AsciiNGram(u32::from_be_bytes(bytes))
     }
 
     #[test]
@@ -208,13 +206,23 @@ mod tests {
         assert_eq!(
             &tokens,
             &[
+                ascii_ngram_feature(" h"),
+
                 ascii_ngram_feature("he"),
+                ascii_ngram_feature(" he"),
+
                 ascii_ngram_feature("el"),
                 ascii_ngram_feature("hel"),
+                ascii_ngram_feature(" hel"),
+
                 ascii_ngram_feature("ll"),
                 ascii_ngram_feature("ell"),
+                ascii_ngram_feature("hell"),
+
                 ascii_ngram_feature("lo"),
                 ascii_ngram_feature("llo"),
+                ascii_ngram_feature("ello"),
+
                 Feature::Unicode('　'),
                 Feature::UnicodeClass('　'),
                 Feature::Unicode('こ'),
@@ -248,9 +256,9 @@ mod tests {
         // Italian
         assert_eq!(detect_language("Ciao, felice contribuente!"), Lang::Ita);
         // Spanish
-        // assert_eq!(detect_language("Hola feliz contribuyente"), Lang::Spa);
+        assert_eq!(detect_language("Hola feliz contribuyente"), Lang::Spa);
         assert_eq!(
-            detect_language("Hola feliz pagador de impuestos!"),
+            detect_language("¡Hola!"),
             Lang::Spa
         );
         // Portuguese

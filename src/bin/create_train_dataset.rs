@@ -34,7 +34,8 @@ fn main() -> io::Result<()> {
         if !language_codes.contains(&id_label_sentence[1]) {
             continue;
         }
-        emit_tokens(id_label_sentence[2], |token| {
+        let sentence: &str = id_label_sentence[2];
+        emit_tokens(sentence, |token| {
             features[token.to_hash() as usize % DIMENSION] += 1;
         });
         write!(
