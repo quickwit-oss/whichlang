@@ -2,6 +2,11 @@
 name = "whichlang"
 version = "0.1.0"
 edition = "2021"
+authors = ["Quickwit, Inc. <hello@quickwit.io>"]
+description = "A blazingly fast and lightweight language detection library for Rust."
+repository = "https://github.com/quickwit-oss/whichlang"
+readme = "README.md"
+license = "MIT"
 
 [dev-dependencies]
 criterion = "0.4"
