@@ -20,7 +20,7 @@ We use the hashing trick and project these features over a space of size `4_096`
 The logistic regression is trained in the python notebook attached,
 and used to generate `weight.rs`.
 
-# Comparison with Whatlang
+# Comparison with [Whatlang](https://github.com/greyblake/whatlang-rs)
 
 The following comparison is using the simple benchmark found in this repository.
 
