@@ -22,7 +22,10 @@ and used to generate `weight.rs`.
 
 # Comparison with [Whatlang](https://github.com/greyblake/whatlang-rs)
 
-The following comparison is using the simple benchmark found in this repository.
+
+The following compares the throughput using the simple benchmark found in this repository and compares the accuracy using [whatlang-corpora](https://github.com/whatlang/whatlang-corpora) benchmark. Overall, Whichlang is about 50x faster and slightly more accurate than Whatlang. 
+
+### Throughput
 
 |                           | Processing Time (µs) | Throughput (MiB/s) |
 | ------------------------- | -------------------- | ------------------ | 
@@ -31,8 +34,7 @@ The following comparison is using the simple benchmark found in this repository.
 | whichlang/short           | 0.261                | 105.69             | 
 | whichlang/long            | 5.205                | 112.31             | 
 
-
-The following compares the accuracy of both libraries using the [whatlang-corpora](https://github.com/whatlang/whatlang-corpora) benchmark.
+### Accuracy
 
 |            | Size <= 20 | 21-50  | 51-100 | Size > 100 | AVG   |
 | -----------| ---------- | ------ | ------ | ---------- | ----- |
