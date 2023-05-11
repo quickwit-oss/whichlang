@@ -44,7 +44,14 @@ impl Feature {
     }
 }
 
-pub fn detect_language(text: &str) -> Lang {
+/// Detects the language of a given text.
+///
+/// Returns `None` for empty string.
+pub fn detect_language(text: &str) -> Option<Lang> {
+    if text.is_empty() {
+        return None;
+    }
+
     let mut scores: [f32; NUM_LANGUAGES] = Default::default();
     let mut num_features = 0.0f32;
     emit_tokens(
@@ -70,7 +77,7 @@ pub fn detect_language(text: &str) -> Lang {
         .max_by(|(_, &score_left), (_, &score_right)| score_left.partial_cmp(&score_right).unwrap())
         .map(|(pos, _val)| pos)
         .unwrap();
-    weights::LANGUAGES[lang_id]
+    Some(weights::LANGUAGES[lang_id])
 }
 
 #[doc(hidden)]
@@ -195,7 +202,7 @@ mod tests {
         assert!(text.is_ascii());
         let mut bytes: [u8; 4] = [0u8; 4];
         assert!(text.len() <= 4);
-        bytes[4-text.len()..].copy_from_slice(text.as_bytes());
+        bytes[4 - text.len()..].copy_from_slice(text.as_bytes());
         Feature::AsciiNGram(u32::from_be_bytes(bytes))
     }
 
@@ -207,22 +214,17 @@ mod tests {
             &tokens,
             &[
                 ascii_ngram_feature(" h"),
-
                 ascii_ngram_feature("he"),
                 ascii_ngram_feature(" he"),
-
                 ascii_ngram_feature("el"),
                 ascii_ngram_feature("hel"),
                 ascii_ngram_feature(" hel"),
-
                 ascii_ngram_feature("ll"),
                 ascii_ngram_feature("ell"),
                 ascii_ngram_feature("hell"),
-
                 ascii_ngram_feature("lo"),
                 ascii_ngram_feature("llo"),
                 ascii_ngram_feature("ello"),
-
                 Feature::Unicode('　'),
                 Feature::UnicodeClass('　'),
                 Feature::Unicode('こ'),
@@ -238,30 +240,45 @@ mod tests {
     #[test]
     fn test_detect_language() {
         // English
-        assert_eq!(detect_language("Hello, happy tax payer"), Lang::Eng);
+        assert_eq!(detect_language("Hello, happy tax payer"), Some(Lang::Eng));
         // French
-        assert_eq!(detect_language("Bonjour joyeux contribuable"), Lang::Fra);
-        // German
-        assert_eq!(detect_language("Hallo glücklicher Steuerzahler"), Lang::Deu);
-        // Japanese
-        assert_eq!(detect_language("こんにちは幸せな税金納め"), Lang::Jpn);
-        // Mandarin chinese
-        assert_eq!(detect_language("你好幸福的纳税人"), Lang::Cmn);
-        // Turkish
-        assert_eq!(detect_language("Merhaba, mutlu vergi mükellefi"), Lang::Tur);
-        // Dutch
-        assert_eq!(detect_language("Hallo, blije belastingbetaler"), Lang::Nld);
-        // Korean
-        assert_eq!(detect_language("안녕하세요 행복한 납세자입니다"), Lang::Kor);
-        // Italian
-        assert_eq!(detect_language("Ciao, felice contribuente!"), Lang::Ita);
-        // Spanish
-        assert_eq!(detect_language("Hola feliz contribuyente"), Lang::Spa);
         assert_eq!(
-            detect_language("¡Hola!"),
-            Lang::Spa
+            detect_language("Bonjour joyeux contribuable"),
+            Some(Lang::Fra)
         );
+        // German
+        assert_eq!(
+            detect_language("Hallo glücklicher Steuerzahler"),
+            Some(Lang::Deu)
+        );
+        // Japanese
+        assert_eq!(detect_language("こんにちは幸せな税金納め"), Some(Lang::Jpn));
+        // Mandarin chinese
+        assert_eq!(detect_language("你好幸福的纳税人"), Some(Lang::Cmn));
+        // Turkish
+        assert_eq!(
+            detect_language("Merhaba, mutlu vergi mükellefi"),
+            Some(Lang::Tur)
+        );
+        // Dutch
+        assert_eq!(
+            detect_language("Hallo, blije belastingbetaler"),
+            Some(Lang::Nld)
+        );
+        // Korean
+        assert_eq!(
+            detect_language("안녕하세요 행복한 납세자입니다"),
+            Some(Lang::Kor)
+        );
+        // Italian
+        assert_eq!(
+            detect_language("Ciao, felice contribuente!"),
+            Some(Lang::Ita)
+        );
+        // Spanish
+        assert_eq!(detect_language("Hola feliz contribuyente"), Some(Lang::Spa));
+        assert_eq!(detect_language("¡Hola!"), Some(Lang::Spa));
         // Portuguese
-        assert_eq!(detect_language("Olá feliz contribuinte"), Lang::Por);
+        assert_eq!(detect_language("Olá feliz contribuinte"), Some(Lang::Por));
     }
 }
