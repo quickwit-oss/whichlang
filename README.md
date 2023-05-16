@@ -7,6 +7,7 @@ This is a language detection library, aiming for both precision and performance.
 - No dependency
 - Throughput above 100 MB/s for short and long strings.
 - Good accuracy (99.5% on my validation dataset, but it really depends on the size of your input.)
+- Supported languages: Arabic, Dutch, English, French, German, Hindi, Italian, Japanese, Korean, Mandarin, Portuguese, Russian, Spanish, Swedish, Turkish, and Vietnamese.
 
 # How does it work?
 
