@@ -1,6 +1,6 @@
 # Whichlang
 
-This is a language detection library, aiming for both precision and performance.
+This is a language detection library, aiming for both precision and performance. You can read our [blog post](https://quickwit.io/blog/whichlang-language-detection-library) that introduces the algorithm behing Whichlang.
 
 # Features
 
