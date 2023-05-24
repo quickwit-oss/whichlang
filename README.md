@@ -2,7 +2,7 @@
 
 This is a language detection library, aiming for both precision and performance.
 
-# Why build this (TLDR)?
+# Why build this?
 While building [Quickwit](https://github.com/quickwit-oss/quickwit), a search engine tailored for log and tracing data, we found ourselves needing a light, fast, and precise language detection library in Rust that works well with our high throughput requirement. The full story and how it works are detailed in this [blog post](https://quickwit.io/blog/whichlang-language-detection-library).
 
 # Features
