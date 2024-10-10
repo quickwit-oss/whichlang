@@ -76,9 +76,7 @@ pub fn detect_language(text: &str) -> Lang {
     let lang_id = scores
         .iter()
         .enumerate()
-        .max_by(|(_, &score_left), (_, &score_right)|{
-            score_left.partial_cmp(&score_right).unwrap()
-        })
+        .max_by(|(_, &score_left), (_, &score_right)| score_left.partial_cmp(&score_right).unwrap())
         .map(|(pos, _val)| pos)
         .unwrap();
     weights::LANGUAGES[lang_id]
@@ -206,7 +204,7 @@ mod tests {
         assert!(text.is_ascii());
         let mut bytes: [u8; 4] = [0u8; 4];
         assert!(text.len() <= 4);
-        bytes[4-text.len()..].copy_from_slice(text.as_bytes());
+        bytes[4 - text.len()..].copy_from_slice(text.as_bytes());
         Feature::AsciiNGram(u32::from_be_bytes(bytes))
     }
 
@@ -218,22 +216,17 @@ mod tests {
             &tokens,
             &[
                 ascii_ngram_feature(" h"),
-
                 ascii_ngram_feature("he"),
                 ascii_ngram_feature(" he"),
-
                 ascii_ngram_feature("el"),
                 ascii_ngram_feature("hel"),
                 ascii_ngram_feature(" hel"),
-
                 ascii_ngram_feature("ll"),
                 ascii_ngram_feature("ell"),
                 ascii_ngram_feature("hell"),
-
                 ascii_ngram_feature("lo"),
                 ascii_ngram_feature("llo"),
                 ascii_ngram_feature("ello"),
-
                 Feature::Unicode('　'),
                 Feature::UnicodeClass('　'),
                 Feature::Unicode('こ'),
@@ -273,10 +266,7 @@ mod tests {
         assert_eq!(detect_language("Ciao, felice contribuente!"), Lang::Ita);
         // Spanish
         assert_eq!(detect_language("Hola feliz contribuyente"), Lang::Spa);
-        assert_eq!(
-            detect_language("¡Hola!"),
-            Lang::Spa
-        );
+        assert_eq!(detect_language("¡Hola!"), Lang::Spa);
         // Portuguese
         assert_eq!(detect_language("Olá feliz contribuinte"), Lang::Por);
     }
