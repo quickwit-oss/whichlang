@@ -1,5 +1,6 @@
 pub use crate::weights::{Lang, LANGUAGES};
 
+#[allow(clippy::all)]
 mod weights;
 
 const NUM_LANGUAGES: usize = LANGUAGES.len();
@@ -66,6 +67,7 @@ pub fn detect_language(text: &str) -> Lang {
     }
 
     let sqrt_inv_num_features = 1.0f32 / (num_features as f32).sqrt();
+    #[allow(clippy::needless_range_loop)]
     for i in 0..NUM_LANGUAGES {
         // Ok so the sqrt(num_features) is not really the norm, but whatever.
         scores[i] = scores[i] * sqrt_inv_num_features + weights::INTERCEPTS[i];
