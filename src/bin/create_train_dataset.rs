@@ -43,11 +43,10 @@ fn main() -> io::Result<()> {
             "{},{}",
             id_label_sentence[0], id_label_sentence[1]
         )?;
-        for i in 0..whichlang::DIMENSION {
-            let feature = features[i];
+        for &feature in &features {
             write!(&mut stdoutlock, ",{feature}")?;
         }
-        write!(&mut stdoutlock, "\n")?;
+        writeln!(&mut stdoutlock)?;
         line.clear();
     }
     Ok(())

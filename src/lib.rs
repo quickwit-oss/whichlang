@@ -1,5 +1,6 @@
 pub use crate::weights::{Lang, LANGUAGES};
 
+#[allow(clippy::all)]
 mod weights;
 
 const NUM_LANGUAGES: usize = LANGUAGES.len();
@@ -46,12 +47,12 @@ impl Feature {
 
 pub fn detect_language(text: &str) -> Lang {
     let mut scores: [f32; NUM_LANGUAGES] = Default::default();
-    let mut num_features = 0.0f32;
+    let mut num_features: u32 = 0;
     emit_tokens(
         text,
         #[inline(always)]
         |token| {
-            num_features += 1.0f32;
+            num_features += 1u32;
             let bucket = token.to_hash() % DIMENSION as u32;
             let idx = bucket as usize * NUM_LANGUAGES;
             let per_language_scores = &weights::WEIGHTS[idx..idx + NUM_LANGUAGES];
@@ -60,10 +61,18 @@ pub fn detect_language(text: &str) -> Lang {
             }
         },
     );
+    if num_features == 0 {
+        // By default, we return English
+        return Lang::Eng;
+    }
+
+    let sqrt_inv_num_features = 1.0f32 / (num_features as f32).sqrt();
+    #[allow(clippy::needless_range_loop)]
     for i in 0..NUM_LANGUAGES {
         // Ok so the sqrt(num_features) is not really the norm, but whatever.
-        scores[i] = scores[i] / num_features.sqrt() + weights::INTERCEPTS[i];
+        scores[i] = scores[i] * sqrt_inv_num_features + weights::INTERCEPTS[i];
     }
+
     let lang_id = scores
         .iter()
         .enumerate()
@@ -195,7 +204,7 @@ mod tests {
         assert!(text.is_ascii());
         let mut bytes: [u8; 4] = [0u8; 4];
         assert!(text.len() <= 4);
-        bytes[4-text.len()..].copy_from_slice(text.as_bytes());
+        bytes[4 - text.len()..].copy_from_slice(text.as_bytes());
         Feature::AsciiNGram(u32::from_be_bytes(bytes))
     }
 
@@ -207,22 +216,17 @@ mod tests {
             &tokens,
             &[
                 ascii_ngram_feature(" h"),
-
                 ascii_ngram_feature("he"),
                 ascii_ngram_feature(" he"),
-
                 ascii_ngram_feature("el"),
                 ascii_ngram_feature("hel"),
                 ascii_ngram_feature(" hel"),
-
                 ascii_ngram_feature("ll"),
                 ascii_ngram_feature("ell"),
                 ascii_ngram_feature("hell"),
-
                 ascii_ngram_feature("lo"),
                 ascii_ngram_feature("llo"),
                 ascii_ngram_feature("ello"),
-
                 Feature::Unicode('　'),
                 Feature::UnicodeClass('　'),
                 Feature::Unicode('こ'),
@@ -233,6 +237,11 @@ mod tests {
                 Feature::UnicodeClass('！'),
             ]
         );
+    }
+
+    #[test]
+    fn test_empty_str() {
+        assert_eq!(detect_language(""), Lang::Eng);
     }
 
     #[test]
@@ -257,10 +266,7 @@ mod tests {
         assert_eq!(detect_language("Ciao, felice contribuente!"), Lang::Ita);
         // Spanish
         assert_eq!(detect_language("Hola feliz contribuyente"), Lang::Spa);
-        assert_eq!(
-            detect_language("¡Hola!"),
-            Lang::Spa
-        );
+        assert_eq!(detect_language("¡Hola!"), Lang::Spa);
         // Portuguese
         assert_eq!(detect_language("Olá feliz contribuinte"), Lang::Por);
     }

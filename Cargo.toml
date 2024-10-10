@@ -1,6 +1,6 @@
 [package]
 name = "whichlang"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Quickwit, Inc. <hello@quickwit.io>"]
 description = "A blazingly fast and lightweight language detection library for Rust."
