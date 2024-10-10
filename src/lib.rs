@@ -46,12 +46,12 @@ impl Feature {
 
 pub fn detect_language(text: &str) -> Lang {
     let mut scores: [f32; NUM_LANGUAGES] = Default::default();
-    let mut num_features = 0.0f32;
+    let mut num_features: u32 = 0;
     emit_tokens(
         text,
         #[inline(always)]
         |token| {
-            num_features += 1.0f32;
+            num_features += 1u32;
             let bucket = token.to_hash() % DIMENSION as u32;
             let idx = bucket as usize * NUM_LANGUAGES;
             let per_language_scores = &weights::WEIGHTS[idx..idx + NUM_LANGUAGES];
@@ -60,14 +60,23 @@ pub fn detect_language(text: &str) -> Lang {
             }
         },
     );
+    if num_features == 0 {
+        // By default, we return English
+        return Lang::Eng;
+    }
+
+    let sqrt_inv_num_features = 1.0f32 / (num_features as f32).sqrt();
     for i in 0..NUM_LANGUAGES {
         // Ok so the sqrt(num_features) is not really the norm, but whatever.
-        scores[i] = scores[i] / num_features.sqrt() + weights::INTERCEPTS[i];
+        scores[i] = scores[i] * sqrt_inv_num_features + weights::INTERCEPTS[i];
     }
+
     let lang_id = scores
         .iter()
         .enumerate()
-        .max_by(|(_, &score_left), (_, &score_right)| score_left.partial_cmp(&score_right).unwrap())
+        .max_by(|(_, &score_left), (_, &score_right)|{
+            score_left.partial_cmp(&score_right).unwrap()
+        })
         .map(|(pos, _val)| pos)
         .unwrap();
     weights::LANGUAGES[lang_id]
@@ -233,6 +242,11 @@ mod tests {
                 Feature::UnicodeClass('！'),
             ]
         );
+    }
+
+    #[test]
+    fn test_empty_str() {
+        assert_eq!(detect_language(""), Lang::Eng);
     }
 
     #[test]
