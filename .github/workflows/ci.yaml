@@ -68,7 +68,7 @@ jobs:
       - name: Run Clippy
         run: cargo clippy -- -D warnings
   
-  3rdparty-license:
+  thirdparty-license:
     name: Check Datadog third-party license file
     runs-on: ubuntu-latest
     steps:
