@@ -83,8 +83,8 @@ jobs:
           path: ~/.cargo/bin
           key: ${{ runner.os }}-cargo-tools-${{ hashFiles('**/Cargo.lock') }}
           
-      - name: Install rust-license-tool
-        run: cargo install rust-license-tool
+      - name: Install dd-rust-license-tool
+        run: cargo install dd-rust-license-tool
         
       - name: Check Datadog third-party license file
         run: dd-rust-license-tool check
