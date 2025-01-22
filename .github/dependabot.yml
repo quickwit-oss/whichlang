@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # Enable version updates for Cargo
+  - package-ecosystem: "cargo"
+    # Look for `Cargo.toml` and `Cargo.lock` files in the `root` directory
+    directory: "/"
+    # Check for updates once a week
+    schedule:
+      interval: "weekly"
+    # Specify labels for pull requests
+    labels:
+      - "dependencies"
+      - "rust"
+    # Allow up to 10 open pull requests
+    open-pull-requests-limit: 10
+    # Create pull requests for patch and minor updates
+    versioning-strategy: auto
+    # Create a group of dependencies to be updated together
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    # Allow up to 5 open pull requests for GitHub Actions
+    open-pull-requests-limit: 5
