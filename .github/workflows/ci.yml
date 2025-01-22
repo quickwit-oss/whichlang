@@ -84,7 +84,7 @@ jobs:
           key: ${{ runner.os }}-cargo-tools-${{ hashFiles('**/Cargo.lock') }}
           
       - name: Install dd-rust-license-tool
-        run: cargo install dd-rust-license-tool
+        run: dd-rust-license-tool --help || cargo install dd-rust-license-tool
         
       - name: Check Datadog third-party license file
         run: dd-rust-license-tool check
