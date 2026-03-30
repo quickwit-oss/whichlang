@@ -20,6 +20,8 @@ updates:
       dependencies:
         patterns:
           - "*"
+    cooldown:
+      default-days: 2
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
@@ -31,3 +33,5 @@ updates:
       - "github-actions"
     # Allow up to 5 open pull requests for GitHub Actions
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 2
