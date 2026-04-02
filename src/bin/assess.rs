@@ -25,7 +25,7 @@ fn main() -> io::Result<()> {
         if !label_codes.contains(&id_label_sentence[1]) {
             continue;
         }
-        let detected: Lang = whichlang::detect_language(id_label_sentence[2]);
+        let detected: Lang = whichlang::detect_language(id_label_sentence[2]).unwrap_or(Lang::Eng);
         total += 1;
         if detected.three_letter_code() != id_label_sentence[1] {
             error += 1;
