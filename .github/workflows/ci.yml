@@ -12,7 +12,7 @@ env:
 jobs:
   test:
     name: Run tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       
@@ -33,7 +33,7 @@ jobs:
 
   formatting:
     name: Check formatting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       
@@ -47,7 +47,7 @@ jobs:
 
   clippy:
     name: Lint with Clippy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       
@@ -70,7 +70,7 @@ jobs:
   
   thirdparty-license:
     name: Check Datadog third-party license file
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       
